@@ -17,10 +17,27 @@ print<<BLOCK;
     <h1>Resultados de la Consulta:$codigo</h1>
 BLOCK
 
-recolectarUniversidad($codigo);
+my %universidades = recolectarUniversidad($codigo);
+
+print<<HTML;
+<table>
+  <tr>
+    <th>Universidad Encontrada</th>
+    <th>Estado de Licenciamiento</th>
+  </tr>
+HTML
+mostrarArreglo(%universidades);
+
+print "</table>";
+
 sub mostrarArreglo {
-  my $unis = @_;
-  
+  my %unis = @_;
+  foreach my $universidad (keys %unis) {
+    print "<tr>\n";
+    print "<td>$universidad</td>\n";
+    print "<td>$unis{$universidad}</td>\n";
+    print "</tr>\n";
+  } 
 }
 
 sub recolectarUniversidad {
@@ -42,7 +59,6 @@ sub recolectarUniversidad {
       my $estado = $4;
       if($entidad eq $codigo) {
         $unis{$universidad} = $estado;      
-        print "<h1>$universidad:$estado</h1>";
         last;
       }
     }      
