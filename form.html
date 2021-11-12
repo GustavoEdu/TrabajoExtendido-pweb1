@@ -3,14 +3,18 @@
   <head>
     <title>Búsqueda de Universidades en Programación Web 1</title>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="./css/estilos.css">
   </head>
 
   <body>
-    <h1>Busqueda de Universidades Licenciadas</h1>
-    <form action="./cgi-bin/consulta.pl" method="GET">
-      <input type="text" name="codigo">
-      <input type="submit" value="Enviar">
-    </form>
+    <h1 class="titulo">Busqueda de Universidades Licenciadas</h1>
+    <div class="centrar">
+      <form action="./cgi-bin/consulta.pl" method="GET">
+        <label for="codigo">Codigo de Entidad: </label>
+        <input type="text" id="codigo" name="codigo">
+        <input type="submit" value="Enviar">
+      </form>
+    </div>
   </body>
 </html>
 
