@@ -12,9 +12,10 @@ print<<BLOCK;
   <head>
     <meta charset="UTF-8">
     <title>Resultados de la Consulta</title>
+    <link rel="stylesheet" href="../css/estilos.css">
   </head>
   <body>
-    <h1>Resultados de la Consulta:$codigo</h1>
+    <h1 class="titulo">Resultados de la Consulta</h1>
 BLOCK
 
 my %universidades = recolectarUniversidad($codigo);
