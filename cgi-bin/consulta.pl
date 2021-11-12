@@ -17,6 +17,12 @@ print<<BLOCK;
     <h1>Resultados de la Consulta:$codigo</h1>
 BLOCK
 
+recolectarUniversidad($codigo);
+sub mostrarArreglo {
+  my $unis = @_;
+  
+}
+
 sub recolectarUniversidad {
   my $codigo = $_[0];
   open(IN, "< :encoding(Latin1)", 'Programas de Universidades.csv') or die "No descargo el archivo de datos";
@@ -25,11 +31,23 @@ sub recolectarUniversidad {
   close(IN);
 
   my $size = contarColumnas($arreglo[0]);
+  my $patter = construirRegExp($size);
 
-  print $size;
+  my %unis = ();
+
   foreach my $linea (@arreglo) {
-    
+    if($linea =~ /$patter/) {
+      my $entidad = $1;
+      my $universidad = $2;
+      my $estado = $4;
+      if($entidad eq $codigo) {
+        $unis{$universidad} = $estado;      
+        print "<h1>$universidad:$estado</h1>";
+        last;
+      }
+    }      
   }
+  return %unis;
 }
 
 sub contarColumnas {
