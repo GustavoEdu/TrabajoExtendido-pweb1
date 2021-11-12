@@ -5,7 +5,10 @@ use CGI;
 
 my $q = CGI->new;
 my $codigo = $q->param("codigo");
-print $q->header("text/html");
+print $q->header(
+  -type => "text/html",
+  -charset => "utf-8"
+);
 print<<BLOCK;
 <!DOCTYPE html>
 <html lang="en">
