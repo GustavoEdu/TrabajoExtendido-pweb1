@@ -44,6 +44,13 @@ sub mostrarArreglo {
   } 
 }
 
+print<<HTML;
+    <br>
+    Ingrese <a href="../form.html">aqui</a> para realizar otra consulta
+  </body>
+</html>
+HTML
+
 sub recolectarUniversidad {
   my $codigo = $_[0];
   open(IN, "< :encoding(Latin1)", 'Programas de Universidades.csv') or die "No descargo el archivo de datos";
