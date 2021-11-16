@@ -5,11 +5,12 @@ use CGI;
 
 my $q = CGI->new;
 my $codigo = $q->param("codigo");
+
 print $q->header(
   -type => "text/html",
   -charset => "utf-8"
 );
-print<<BLOCK;
+print<<HTML;
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -19,10 +20,12 @@ print<<BLOCK;
   </head>
   <body>
     <h1 class="titulo">Resultados de la Consulta</h1>
-BLOCK
+HTML
 
+#Aplicación de las Subrutinas
 my %universidades = recolectarUniversidad($codigo);
 
+#Mostramos la Información Recolectada en Forma de una Tabla
 print<<HTML;
 <table>
   <tr>
@@ -31,7 +34,6 @@ print<<HTML;
   </tr>
 HTML
 mostrarArreglo(%universidades);
-
 print "</table>";
 
 sub mostrarArreglo {
@@ -44,9 +46,12 @@ sub mostrarArreglo {
   } 
 }
 
+#Se imprime la cola del texto HTML
 print<<HTML;
     <br>
     Ingrese <a href="../form.html">aqui</a> para realizar otra consulta
+    <br>
+    <br>
   </body>
 </html>
 HTML
@@ -77,6 +82,11 @@ sub recolectarUniversidad {
   return %unis;
 }
 
+sub contarCarrerasPosgrado {
+  my $codigo = $_[0];
+}
+
+#Subrutina que cuenta el Número de Columnas del Encabezado
 sub contarColumnas {
   my $line = $_[0];
   my $counter = 1;
@@ -87,6 +97,7 @@ sub contarColumnas {
   return $counter;
 }
 
+#Subrutina que construye la Expresión Regular según Extensión
 sub construirRegExp {
   my $num = $_[0];
   my $s = "^";
