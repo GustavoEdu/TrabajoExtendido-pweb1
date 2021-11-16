@@ -17,34 +17,22 @@ print<<HTML;
     <meta charset="UTF-8">
     <title>Resultados de la Consulta</title>
     <link rel="stylesheet" href="../css/estilos.css">
+    <style>
+      * {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      h2 {
+        text-align: left;
+        color: #c1121f;
+      }
+    </style>
   </head>
   <body>
     <h1 class="titulo">Resultados de la Consulta</h1>
 HTML
 
-#Aplicación de las Subrutinas
-my %universidades = recolectarUniversidad($codigo);
-
-#Mostramos la Información Recolectada en Forma de una Tabla
-print<<HTML;
-<table>
-  <tr>
-    <th>Universidad Encontrada</th>
-    <th>Estado de Licenciamiento</th>
-  </tr>
-HTML
-mostrarArreglo(%universidades);
-print "</table>";
-
-sub mostrarArreglo {
-  my %unis = @_;
-  foreach my $universidad (keys %unis) {
-    print "<tr>\n";
-    print "<td>$universidad</td>\n";
-    print "<td>$unis{$universidad}</td>\n";
-    print "</tr>\n";
-  } 
-}
+#Realizamos la aplicación de las Subrutinas
+mostrarDatosUniversidad($codigo);
 
 #Se imprime la cola del texto HTML
 print<<HTML;
@@ -56,7 +44,53 @@ print<<HTML;
 </html>
 HTML
 
-sub recolectarUniversidad {
+#Subrutina que muestra la Información Esencial de la Consulta
+sub mostrarDatosUniversidad {
+  my $codigo = $_[0];
+  my %universidad = recolectarDatosUniversidad($codigo);
+    
+  print "<table>\n";
+  print "<tr>\n";
+  print "<th>Universidad Encontrada</th>\n";
+  print "<th>Estado Licenciamiento</th>\n";
+  print "<th>Tipo Gestión</th>\n";
+  print "<th>Numero de Carreras Pregrado</th>\n";
+  print "<th>Numero de Carreras Posgrado</th>\n";
+  print "<th>Cantidad de Carreras</th>\n";
+  print "</tr>\n";
+  
+  print "<tr>\n";
+  print "<td>" . $universidad{"nombre"} . "</td>\n"; 
+  print "<td>" . $universidad{"tipoGestion"} . "</td>\n"; 
+  print "<td>" . $universidad{"estadoLicenciamiento"} . "</td>\n";
+  print "<td>" . $universidad{"numCarrerasPregrado"} . "</td>\n"; 
+  print "<td>" . $universidad{"numCarrerasPosgrado"} . "</td>\n"; 
+  print "<td>" . $universidad{"cantidadCarreras"} . "</td>\n"; 
+  print "</tr>\n";
+  print "</table>\n";
+
+  print "<h2>Carreras de Pregrado:</h2>\n";
+  mostrarCarrerasPorTipo($codigo, "PREGRADO");
+  print "<h2>Carreras de Posgrado:</h2>\n";
+  mostrarCarrerasPorTipo($codigo, "POSGRADO");
+}
+
+#Subrutina que muestra las Carreras según Tipo Nivel Académico
+sub mostrarCarrerasPorTipo {
+  my $codigo = $_[0];
+  my $tipo = $_[1];
+  my @carreras = extraerCarrerasPorTipo($codigo, $tipo);
+
+  print "<ul>\n";
+  foreach my $carrera (@carreras) {
+    print "<li>$carrera</li>\n";
+  }
+  print "</ul>\n";
+}
+
+#Subrutina que recolecta en un Arreglo Asociativo los diferentes datos
+#relacionados a la Universidad de Consulta
+sub recolectarDatosUniversidad {
   my $codigo = $_[0];
   open(IN, "< :encoding(Latin1)", 'Programas de Universidades.csv') or die "No descargo el archivo de datos";
   binmode(IN, ":encoding(Latin1)") || die "can't binmode to encoding Latin1";
@@ -64,26 +98,85 @@ sub recolectarUniversidad {
   close(IN);
 
   my $size = contarColumnas($arreglo[0]);
-  my $patter = construirRegExp($size);
+  my $pattern = construirRegExp($size);
 
-  my %unis = ();
+  my %universidad = ();
 
   foreach my $linea (@arreglo) {
-    if($linea =~ /$patter/) {
-      my $entidad = $1;
-      my $universidad = $2;
-      my $estado = $4;
-      if($entidad eq $codigo) {
-        $unis{$universidad} = $estado;      
+    if($linea =~ /$pattern/) {
+      my $codigoEntidad = $1;
+      my $nombre = $2;
+      my $tipoGestion = $3;
+      my $estadoLicenciamiento = $4;
+      if($codigoEntidad eq $codigo) {
+        $universidad{"nombre"} = $nombre;
+        $universidad{"tipoGestion"} = $tipoGestion;
+        $universidad{"estadoLicenciamiento"} = $estadoLicenciamiento;
+        $universidad{"numCarrerasPregrado"} = contarCarrerasPorTipo($codigo, "PREGRADO");
+        $universidad{"numCarrerasPosgrado"} = contarCarrerasPorTipo($codigo, "POSGRADO");
+        $universidad{"cantidadCarreras"} = $universidad{"numCarrerasPregrado"} + $universidad{"numCarrerasPosgrado"};
         last;
       }
     }      
   }
-  return %unis;
+  return %universidad;
 }
 
-sub contarCarrerasPosgrado {
+#Subrutina que Extrae en un Array de Strings las Carreras Profesionales que tiene una Universidad según Tipo
+sub extraerCarrerasPorTipo {
   my $codigo = $_[0];
+  my $tipo = $_[1];
+  my @carreras;
+  #Leyendo todas las líneas del Archivo
+  open(IN, "< :encoding(Latin1)", "Programas de Universidades.csv") or die "can't binmode to encoding Latin1";
+  binmode(IN, ":encoding(Latin1)") || die "can't binmode to encoding Latin1";
+  my @arreglo = <IN>;
+  close(IN);
+
+  my $size = contarColumnas($arreglo[0]);
+  my $pattern = construirRegExp($size);
+
+  foreach my $linea (@arreglo) {
+    if($linea =~ /$pattern/) {
+      my $codigoEntidad = $1;
+      my $tipoNivelAcademico = $18;
+      my $denominacionPrograma = $17;
+      if($codigoEntidad eq $codigo) {
+        if($tipoNivelAcademico eq $tipo) {
+          push(@carreras, $denominacionPrograma);
+        }
+      }
+    }
+  }
+  return @carreras;
+}
+
+#Subrutina que Cuenta las Carreras por Tipo Nivel Académico
+sub contarCarrerasPorTipo {
+  my $codigo = $_[0];
+  my $tipo = $_[1];
+  #Leyendo todas las líneas del Archivo
+  open(IN, "< :encoding(Latin1)", "Programas de Universidades.csv") or die "can't binmode to encoding Latin1";
+  binmode(IN, ":encoding(Latin1)") || die "can't binmode to encoding Latin1";
+  my @arreglo = <IN>;
+  close(IN);
+
+  my $size = contarColumnas($arreglo[0]);
+  my $pattern = construirRegExp($size);
+  my $counter = 0;
+
+  foreach my $linea (@arreglo) {
+    if($linea =~ /$pattern/) {
+      my $codigoEntidad = $1;
+      my $tipoNivelAcademico = $18;
+      if($codigoEntidad eq $codigo) {
+        if($tipoNivelAcademico eq $tipo) {
+          $counter++;
+        }
+      }
+    }
+  }
+  return $counter;
 }
 
 #Subrutina que cuenta el Número de Columnas del Encabezado
